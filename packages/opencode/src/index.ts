@@ -21,8 +21,6 @@ import { McpCommand } from "./cli/cmd/mcp"
 import { GithubCommand } from "./cli/cmd/github"
 import { ExportCommand } from "./cli/cmd/export"
 import { ImportCommand } from "./cli/cmd/import"
-import { AttachCommand } from "./cli/cmd/tui/attach"
-import { TuiThreadCommand } from "./cli/cmd/tui/thread"
 import { AcpCommand } from "./cli/cmd/acp"
 import { EOL } from "os"
 import { WebCommand } from "./cli/cmd/web"
@@ -36,6 +34,42 @@ import { Database } from "./storage/db"
 import { errorMessage } from "./util/error"
 import { PluginCommand } from "./cli/cmd/plug"
 import { drizzle } from "drizzle-orm/bun-sqlite"
+
+function applyBuilder(yargs: any, builder: any) {
+  if (typeof builder === "function") {
+    return builder(yargs)
+  }
+  if (builder) {
+    return yargs.options(builder)
+  }
+  return yargs
+}
+
+const TuiThreadCommand = {
+  command: "$0 [project]",
+  describe: "start opencode tui",
+  builder: async (yargs: any) => {
+    const mod = await import("./cli/cmd/tui/thread")
+    return applyBuilder(yargs, mod.TuiThreadCommand.builder)
+  },
+  handler: async (args: any) => {
+    const mod = await import("./cli/cmd/tui/thread")
+    return mod.TuiThreadCommand.handler(args)
+  },
+}
+
+const AttachCommand = {
+  command: "attach <url>",
+  describe: "attach to a running opencode server",
+  builder: async (yargs: any) => {
+    const mod = await import("./cli/cmd/tui/attach")
+    return applyBuilder(yargs, mod.AttachCommand.builder)
+  },
+  handler: async (args: any) => {
+    const mod = await import("./cli/cmd/tui/attach")
+    return mod.AttachCommand.handler(args)
+  },
+}
 
 process.on("unhandledRejection", (e) => {
   Log.Default.error("rejection", {
